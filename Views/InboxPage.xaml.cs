@@ -7,5 +7,13 @@ namespace MauiMail.Views
         {
             InitializeComponent();
         }
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is ViewModels.InboxViewModel vm && vm.RefreshCommand.CanExecute(null))
+            {
+                vm.RefreshCommand.Execute(null);
+            }
+        }
     }
 }

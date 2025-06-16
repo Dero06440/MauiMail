@@ -8,8 +8,12 @@
     Title="MauiMail">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Inbox"
+        ContentTemplate="{DataTemplate views:InboxPage}"
+        Route="InboxPage" />
 
+    <ShellContent
+        Title="Compose"
+        ContentTemplate="{DataTemplate views:ComposePage}"
+        Route="ComposePage" />
 </Shell>

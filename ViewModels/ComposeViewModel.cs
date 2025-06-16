@@ -14,13 +14,15 @@ namespace MauiMail.ViewModels
         public ICommand SendCommand { get; }
         public ICommand AttachCommand { get; }
 
+        public IList<Attachment> Attachments { get; } = new List<Attachment>();
+
         private readonly EmailService _emailService;
 
         public ComposeViewModel()
         {
             _emailService = new EmailService();
             SendCommand = new Command(async () => await SendEmailAsync());
-            AttachCommand = new Command(() => { /* Ajouter pièce jointe */ });
+            AttachCommand = new Command(async () => await PickAttachmentAsync());
         }
 
         private async Task SendEmailAsync()
@@ -29,9 +31,35 @@ namespace MauiMail.ViewModels
             {
                 Recipient = this.Recipient,
                 Subject = this.Subject,
-                Body = this.Body
+                Body = this.Body,
+                Attachments = this.Attachments.ToList()
             };
             await _emailService.SendEmailAsync(message);
         }
+
+        private async Task PickAttachmentAsync()
+        {
+            try
+            {
+                var result = await FilePicker.Default.PickAsync();
+                if (result != null)
+                {
+                    using var stream = await result.OpenReadAsync();
+                    using var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    Attachments.Add(new Attachment
+                    {
+                        FileName = result.FileName,
+                        Data = ms.ToArray()
+                    });
+                }
+            }
+            catch
+            {
+                // Ignore errors for now
+            }
+        }
+
+
     }
 }
