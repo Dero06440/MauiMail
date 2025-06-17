@@ -8,17 +8,24 @@
         <vm:InboxViewModel />
     </ContentPage.BindingContext>
 
-    <CollectionView ItemsSource="{Binding Messages}" SelectionMode="Single">
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <Frame BorderColor="Gray" Padding="10" Margin="5">
-                    <VerticalStackLayout>
-                        <Label Text="{Binding Subject}" FontAttributes="Bold" FontSize="16"/>
-                        <Label Text="{Binding Sender}" FontSize="13" TextColor="Gray"/>
-                        <Label Text="{Binding Date, StringFormat='{0:dd MMM yyyy HH:mm}'}" FontSize="11" TextColor="DarkGray"/>
-                    </VerticalStackLayout>
-                </Frame>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-    </CollectionView>
+    <Grid RowDefinitions="*,Auto">
+        <CollectionView ItemsSource="{Binding Messages}" SelectionMode="Single" SelectedItem="{Binding SelectedMessage}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="Gray" Padding="10" Margin="5">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Subject}" FontAttributes="Bold" FontSize="16"/>
+                            <Label Text="{Binding Sender}" FontSize="13" TextColor="Gray"/>
+                            <Label Text="{Binding Date, StringFormat='{0:dd MMM yyyy HH:mm}'}" FontSize="11" TextColor="DarkGray"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Border Grid.Row="1" Stroke="Gray" Padding="10" Margin="5">
+            <ScrollView>
+                <Label Text="{Binding SelectedMessage.Body, TargetNullValue='Sélectionnez un message'}" x:Name="BodyLabel" />
+            </ScrollView>
+        </Border>
+    </Grid>
 </ContentPage>
