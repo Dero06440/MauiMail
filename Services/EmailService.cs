@@ -4,11 +4,21 @@ using MailKit.Security;
 using MailKit;
 using MimeKit;
 using MauiMail.Models;
+using System.Diagnostics;
 
 namespace MauiMail.Services
 {
     public class EmailService
     {
+
+        private const string ImapHostKey = "MailImapHost";
+        private const string ImapPortKey = "MailImapPort";
+        private const string SmtpHostKey = "MailSmtpHost";
+        private const string SmtpPortKey = "MailSmtpPort";
+        private const string UsernameKey = "MailUsername";
+        private const string PasswordKey = "MailPassword";
+
+
         private readonly string _imapHost;
         private readonly int _imapPort;
         private readonly string _smtpHost;
@@ -18,19 +28,51 @@ namespace MauiMail.Services
 
         public EmailService()
         {
-            // These values can be provided through configuration or environment variables
-            _imapHost = Environment.GetEnvironmentVariable("MAIL_IMAP_HOST") ?? "imap.example.com";
-            _imapPort = int.TryParse(Environment.GetEnvironmentVariable("MAIL_IMAP_PORT"), out var imap) ? imap : 993;
-            _smtpHost = Environment.GetEnvironmentVariable("MAIL_SMTP_HOST") ?? "smtp.example.com";
-            _smtpPort = int.TryParse(Environment.GetEnvironmentVariable("MAIL_SMTP_PORT"), out var smtp) ? smtp : 587;
-            _username = Environment.GetEnvironmentVariable("MAIL_USERNAME") ?? string.Empty;
-            _password = Environment.GetEnvironmentVariable("MAIL_PASSWORD") ?? string.Empty;
+            /*
+            Preferences.Set(ImapHostKey, "imap.gmail.com");
+            Preferences.Set(ImapPortKey, 993);
+            Preferences.Set(SmtpHostKey, "smtp.gmail.com");
+            Preferences.Set(SmtpPortKey, 587);
+            //Preferences.Set(UsernameKey, "xxxxxx@gmail.com");
+            //gmail : mot de passe créé pour l'appli (https://myaccount.google.com/apppasswords)) 
+            //Preferences.Set(PasswordKey, "lemotdepasse");
+            
+
+            _imapHost = Preferences.Get(ImapHostKey, "imap.gmail.com");
+            _imapPort = Preferences.Get(ImapPortKey, 993);
+            _smtpHost = Preferences.Get(SmtpHostKey, "smtp.example.com");
+            _smtpPort = Preferences.Get(SmtpPortKey, 587);
+            _username = Preferences.Get(UsernameKey, string.Empty);
+            _password = Preferences.Get(PasswordKey, string.Empty);
+            */
+
+            /*
+            Preferences.Set(ImapHostKey, "imap.free.fr");
+            Preferences.Set(ImapPortKey, 993);
+            Preferences.Set(SmtpHostKey, "smtp.free.fr");
+            Preferences.Set(SmtpPortKey, 587);
+            Preferences.Set(UsernameKey, "xxxxxx@free.fr");
+            Preferences.Set(PasswordKey, "lemotdepasse");
+            */
+
+
+            _imapHost = Preferences.Get(ImapHostKey, "imap.free.fr");
+            _imapPort = Preferences.Get(ImapPortKey, 993);
+            _smtpHost = Preferences.Get(SmtpHostKey, "smtp.free.fr");
+            _smtpPort = Preferences.Get(SmtpPortKey, 587);
+            _username = Preferences.Get(UsernameKey, string.Empty);
+            _password = Preferences.Get(PasswordKey, string.Empty);
+
+
+
         }
+
 
         public async Task<List<MauiMail.Models.EmailMessage>> GetInboxMessagesAsync()
         {
             var messages = new List<MauiMail.Models.EmailMessage>();
             using var client = new ImapClient();
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true; //todo temporaire
             await client.ConnectAsync(_imapHost, _imapPort, SecureSocketOptions.SslOnConnect);
             if (!string.IsNullOrEmpty(_username))
                 await client.AuthenticateAsync(_username, _password);
@@ -38,8 +80,9 @@ namespace MauiMail.Services
             var inbox = client.Inbox;
             await inbox.OpenAsync(FolderAccess.ReadOnly);
 
-            for (int i = 0; i < inbox.Count; i++)
+            for (int i = 5; i < 10; i++) //todo  i < inbox.Count
             {
+                Debug.WriteLine(i);
                 var mime = await inbox.GetMessageAsync(i);
                 var email = new MauiMail.Models.EmailMessage
                 {
@@ -71,6 +114,7 @@ namespace MauiMail.Services
         public async Task SendEmailAsync(MauiMail.Models.EmailMessage message)
         {
             using var client = new SmtpClient();
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;//todo temporaire
             await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
             if (!string.IsNullOrEmpty(_username))
                 await client.AuthenticateAsync(_username, _password);
